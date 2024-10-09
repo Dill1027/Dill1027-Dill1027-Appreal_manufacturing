@@ -84,7 +84,7 @@ const update = async (req, res, next) => {
     Leavetype,
   } = req.body;
 
-  let attendance;
+  let attendance; 
 
   try {
     attendance = await AttendanceModel.findByIdAndUpdate(id, {
