@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import SideBar from "../Home/SideBar";
+
 function AddSupplier() {
   const [inputs, setInputs] = useState({
     supID: "",
@@ -9,6 +10,7 @@ function AddSupplier() {
     phone: "",
     address: "",
   });
+
   const generateID = () => {
     const prefix = "SID";
     const randomNumber = Math.floor(100000000 + Math.random() * 900000000);
@@ -21,8 +23,22 @@ function AddSupplier() {
       supID: generateID(),
     }));
   }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "name") {
+      // Allow only alphabetic characters and spaces
+      const regex = /^[A-Za-z\s]*$/;
+      if (!regex.test(value)) return; // Prevent invalid input
+    }
+
+    if (name === "phone") {
+      // Allow only numbers and restrict to 10 digits
+      const regex = /^[0-9]{0,10}$/;
+      if (!regex.test(value)) return; // Prevent invalid input
+    }
+
     setInputs((prevInputs) => ({
       ...prevInputs,
       [name]: value,
@@ -46,6 +62,7 @@ function AddSupplier() {
       address: inputs.address,
     });
   };
+
   return (
     <div>
       <div className="main_function">
@@ -53,10 +70,10 @@ function AddSupplier() {
           <SideBar />
         </div>
         <div className="lef_child">
-          <h1 className="main_topic_function">Add Supplier </h1>
+          <h1 className="main_topic_function">Add Supplier</h1>
           <form className="from_data" onSubmit={handleSubmit}>
             <div className="">
-              <label className="form_lable"> ID:</label>
+              <label className="form_lable">ID:</label>
               <br />
               <input
                 type="text"
@@ -70,7 +87,7 @@ function AddSupplier() {
               />
             </div>
             <div className="">
-              <label className="form_lable">name:</label>
+              <label className="form_lable">Name:</label>
               <br />
               <input
                 type="text"
@@ -83,7 +100,7 @@ function AddSupplier() {
               />
             </div>
             <div className="">
-              <label className="form_lable">email:</label>
+              <label className="form_lable">Email:</label>
               <br />
               <input
                 type="text"
@@ -95,25 +112,24 @@ function AddSupplier() {
                 required
               />
             </div>
-
             <div className="">
-              <label className="form_lable">phone:</label>
+              <label className="form_lable">Phone:</label>
               <br />
               <input
                 type="number"
                 id="phone"
                 name="phone"
                 className="form_input"
-                value={inputs.QuantityOrder}
+                value={inputs.phone}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="">
-              <label className="form_lable">address:</label>
+              <label className="form_lable">Address:</label>
               <br />
               <input
-                type="txet"
+                type="text"
                 id="address"
                 name="address"
                 className="form_input"
@@ -122,9 +138,8 @@ function AddSupplier() {
                 required
               />
             </div>
-
             <button type="submit" className="frombtn">
-              submit
+              Submit
             </button>
           </form>
         </div>
