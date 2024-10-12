@@ -1,173 +1,151 @@
-import React from "react";
-import SideBar from "../Home/SideBar";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import NotFound from "./img/notfound.jpg";
-const URL = "http://localhost:8081/order";
+import SideBar from "../Home/SideBar";
 
-const fetchHandler = async () => {
-  return await axios.get(URL).then((res) => res.data);
-};
-function AllOrder() {
-  const [order, setOrder] = useState([]);
+function AddSupplier() {
+  const [inputs, setInputs] = useState({
+    supID: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  const generateID = () => {
+    const prefix = "SID";
+    const randomNumber = Math.floor(100000000 + Math.random() * 900000000);
+    return `${prefix}${randomNumber}`;
+  };
 
   useEffect(() => {
-    fetchHandler().then((data) => setOrder(data.order));
+    setInputs((prevInputs) => ({
+      ...prevInputs,
+      supID: generateID(),
+    }));
   }, []);
-  const deleteHandler = async (_id) => {
-    // Define _id as a parameter
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this Data?"
-    );
 
-    if (confirmed) {
-      try {
-        await axios.delete(`${URL}/${_id}`); // Correct URL construction
-        window.alert(" Delete successfully!");
-        window.location.reload();
-      } catch (error) {
-        // Handle deletion error if needed
-        console.error("Error deleting details:", error);
-      }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "name") {
+      // Allow only alphabetic characters and spaces
+      const regex = /^[A-Za-z\s]*$/;
+      if (!regex.test(value)) return; // Prevent invalid input
     }
-  };
-  /*Search Function */
-  const [searchQuery, setSearchQuery] = useState("");
-  const [noResults, setNoResults] = useState(false);
 
-  const handleSearch = () => {
-    fetchHandler().then((data) => {
-      const filtered = data.order.filter((order) =>
-        Object.values(order).some((field) =>
-          field.toString().toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-      setOrder(filtered);
-      setNoResults(filtered.length === 0);
+    if (name === "phone") {
+      // Allow only numbers and restrict to 10 digits
+      const regex = /^[0-9]{0,10}$/;
+      if (!regex.test(value)) return; // Prevent invalid input
+    }
+
+    setInputs((prevInputs) => ({
+      ...prevInputs,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(inputs);
+    await sendRequest();
+    window.alert("Submit successfully!");
+    window.location.href = "./SupplierDash";
+  };
+
+  const sendRequest = async () => {
+    await axios.post("http://localhost:8081/supplier", {
+      supID: inputs.supID,
+      name: inputs.name,
+      email: inputs.email,
+      phone: inputs.phone,
+      address: inputs.address,
     });
   };
-  /* Report Generation Function */
-  const handleGenerateReport = () => {
-    const doc = new jsPDF();
 
-    doc.text("order Report", 20, 10);
-
-    const columns = [
-      "OrderID",
-      "SupplierID",
-      "SupplierName",
-      "QuantityOrder",
-      "total",
-    ];
-
-    const rows = order.map((item) => [
-      item.OrderID,
-      item.SupplierID,
-      item.SupplierName,
-      item.QuantityOrder,
-      item.total,
-    ]);
-
-    doc.autoTable({
-      head: [columns],
-      body: rows,
-    });
-
-    doc.save("order.pdf");
-  };
   return (
     <div>
-      {" "}
       <div className="main_function">
         <div>
           <SideBar />
         </div>
         <div className="lef_child">
-          <div className="">
-            <h1 className="main_topic_function">Order Details</h1>
-            <div className="action_set">
-              <button
-                className="function_btn"
-                onClick={() => (window.location.href = "/addOrder")}
-              >
-                Add New Order
-              </button>
-              <tr>
-                <td className="">
-                  <input
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    type="text"
-                    name="search"
-                    className="search_bar"
-                    placeholder="Search Here..."
-                  ></input>
-                </td>
-
-                <td>
-                  <button onClick={handleSearch} className="search_btn">
-                    Search
-                  </button>
-                </td>
-              </tr>
-              <button className="function_btn" onClick={handleGenerateReport}>
-                Generate Report
-              </button>
+          <h1 className="main_topic_function">Add Supplier</h1>
+          <form className="from_data" onSubmit={handleSubmit}>
+            <div className="">
+              <label className="form_lable">ID:</label>
+              <br />
+              <input
+                type="text"
+                id="supID"
+                name="supID"
+                className="form_input"
+                value={inputs.supID}
+                onChange={handleChange}
+                required
+                readOnly
+              />
             </div>
-            <br /> <br />
-            {noResults ? (
-              <div className="">
-                <img src={NotFound} alt="noimg" className="nofoundimg" />
-                <p className="nopeara">No Details Found</p>
-              </div>
-            ) : (
-              <div className="table_container">
-                <table className="admin_table">
-                  <thead>
-                    <tr className="">
-                      <th className="admin_table_th">OrderID</th>
-                      <th className="admin_table_th">SupplierID</th>
-                      <th className="admin_table_th">SupplierName</th>
-                      <th className="admin_table_th">QuantityOrder</th>
-                      <th className="admin_table_th">total</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {order.map((item, index) => (
-                      <tr className="" key={index}>
-                        <td className="admin_table_td">{item.OrderID}</td>
-                        <td className="admin_table_td">{item.SupplierID}</td>
-                        <td className="admin_table_td">{item.SupplierName}</td>
-                        <td className="admin_table_td">{item.QuantityOrder}</td>
-                        <td className="admin_table_td">{item.total}</td>
-                        <td className="admin_table_td tbl_btn">
-                          <Link
-                            className="update_btn"
-                            to={`/updateOrder/${item._id}`}
-                          >
-                            Update
-                          </Link>
-                          <button
-                            onClick={() => deleteHandler(item._id)}
-                            className="dltbtn"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+            <div className="">
+              <label className="form_lable">Name:</label>
+              <br />
+              <input
+                type="text"
+                id="name"
+                name="name"
+                className="form_input"
+                value={inputs.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="">
+              <label className="form_lable">Email:</label>
+              <br />
+              <input
+                type="text"
+                id="email"
+                name="email"
+                className="form_input"
+                value={inputs.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="">
+              <label className="form_lable">Phone:</label>
+              <br />
+              <input
+                type="number"
+                id="phone"
+                name="phone"
+                className="form_input"
+                value={inputs.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="">
+              <label className="form_lable">Address:</label>
+              <br />
+              <input
+                type="text"
+                id="address"
+                name="address"
+                className="form_input"
+                value={inputs.address}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <button type="submit" className="frombtn">
+              Submit
+            </button>
+          </form>
         </div>
       </div>
     </div>
   );
 }
 
-export default AllOrder;
+export default AddSupplier;
