@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import SideBar from "../Home/SideBar";
+
 function AddOrder() {
   const [inputs, setInputs] = useState({
     OrderID: "",
@@ -9,6 +10,7 @@ function AddOrder() {
     QuantityOrder: "",
     total: "",
   });
+
   const generateID = () => {
     const prefix = "OID";
     const randomNumber = Math.floor(100000000 + Math.random() * 900000000);
@@ -21,8 +23,22 @@ function AddOrder() {
       OrderID: generateID(),
     }));
   }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "SupplierName") {
+      // Allow only alphabetic characters and spaces for Supplier Name
+      const regex = /^[A-Za-z\s]*$/;
+      if (!regex.test(value)) return; // Prevent invalid input
+    }
+
+    if (name === "QuantityOrder" || name === "total") {
+      // Allow only numbers for Quantity Order and total
+      const regex = /^[0-9]*$/;
+      if (!regex.test(value)) return; // Prevent invalid input
+    }
+
     setInputs((prevInputs) => ({
       ...prevInputs,
       [name]: value,
@@ -46,9 +62,9 @@ function AddOrder() {
       total: inputs.total,
     });
   };
+
   return (
     <div>
-      {" "}
       <div className="main_function">
         <div>
           <SideBar />
@@ -71,7 +87,7 @@ function AddOrder() {
               />
             </div>
             <div className="">
-              <label className="form_lable">SupplierID:</label>
+              <label className="form_lable">Supplier ID:</label>
               <br />
               <input
                 type="text"
@@ -111,7 +127,7 @@ function AddOrder() {
               />
             </div>
             <div className="">
-              <label className="form_lable">total $:</label>
+              <label className="form_lable">Total $:</label>
               <br />
               <input
                 type="number"
@@ -125,7 +141,7 @@ function AddOrder() {
             </div>
 
             <button type="submit" className="frombtn">
-              submit
+              Submit
             </button>
           </form>
         </div>
